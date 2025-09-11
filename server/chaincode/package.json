@@ -1,0 +1,26 @@
+{
+  "name": "chaincode",
+  "version": "1.0.0",
+  "description": "Chaincode for CV application",
+  "license": "ISC",
+  "author": "Daniel Valderrama",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engineStrict": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "fabric-contract-api": "^2.5.8",
+    "fabric-shim": "^2.5.8"
+  },
+  "keywords": [
+    "hyperledger",
+    "fabric",
+    "chaincode"
+  ]
+}
