@@ -2,3 +2,4 @@ node_modules/
 server/chaincode/node_modules/
 package-lock.json
 server/chaincode/package-lock.json
+server/wallet/
