@@ -1,4 +1,6 @@
 const CVChaincode = require('./cv-chaincode.js');
 
-module.exports.CVChaincode = CVChaincode;
-module.exports.contracts = [CVChaincode];
+// Set the contracts property on the class itself
+CVChaincode.contracts = [CVChaincode];
+
+module.exports = CVChaincode;

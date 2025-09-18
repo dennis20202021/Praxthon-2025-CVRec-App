@@ -10,6 +10,7 @@
     "start:fabric": "./scripts/startFabric.sh",
     "deploy:chaincode": "./scripts/deployChaincode.sh",
     "register:admin": "node server/registerUser.js",
+    "import:admin-user": "node server/importFabricAdmin.js",
     "dev": "node server.js",
     "build": "NODE_ENV=production webpack --mode production",
     "start": "NODE_ENV=production node server.js",

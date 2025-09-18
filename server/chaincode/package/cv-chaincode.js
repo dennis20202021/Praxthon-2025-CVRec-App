@@ -1,13 +1,15 @@
+// server/chaincode/cv-chaincode.js
 const { Contract, Context } = require('fabric-contract-api');
 
 class CVContext extends Context {
     constructor() {
         super();
+        // You can add custom context properties here if needed
     }
 }
 
 class CVChaincode extends Contract {
-
+    
     constructor() {
         super('CVChaincode');
     }
@@ -23,17 +25,14 @@ class CVChaincode extends Contract {
     async initLedger(ctx) {
         console.info('============= START : Initialize Ledger ===========');
         try {
-            // USE TRANSACTION TIMESTAMP INSTEAD OF new Date()
-            const txTimestamp = ctx.stub.getTxTimestamp();
-            const createdAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
-
+            // Add some initial data to ensure the chaincode works
             const initialUsers = [
                 {
                     userId: 'admin_user',
                     email: 'admin@example.com',
                     name: 'Admin User',
                     role: 'candidate',
-                    createdAt: createdAt // Now deterministic!
+                    createdAt: new Date().toISOString()
                 }
             ];
 
@@ -61,11 +60,6 @@ class CVChaincode extends Contract {
             }
 
             const user = JSON.parse(userData);
-
-            // USE TRANSACTION TIMESTAMP INSTEAD OF new Date()
-            const txTimestamp = ctx.stub.getTxTimestamp();
-            const createdAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
-
             const userObj = {
                 docType: 'user',
                 userId: userId,
@@ -73,7 +67,7 @@ class CVChaincode extends Contract {
                 password: user.password,
                 name: user.name,
                 role: user.role,
-                createdAt: createdAt  // Now deterministic!
+                createdAt: new Date().toISOString()
             };
 
             await ctx.stub.putState(userId, Buffer.from(JSON.stringify(userObj)));
@@ -156,15 +150,11 @@ class CVChaincode extends Contract {
                 throw new Error(`The job ${jobId} already exists`);
             }
 
-            // USE TRANSACTION TIMESTAMP INSTEAD OF new Date()
-            const txTimestamp = ctx.stub.getTxTimestamp();
-            const createdAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
-
             const job = {
                 docType: 'job',
                 jobId: jobId,
                 ...JSON.parse(jobData),
-                createdAt: createdAt, // Now deterministic!
+                createdAt: new Date().toISOString(),
                 applicants: []
             };
 
@@ -225,13 +215,9 @@ class CVChaincode extends Contract {
             const job = JSON.parse(jobJSON.toString());
             const applicant = JSON.parse(applicantData);
 
-            // USE TRANSACTION TIMESTAMP INSTEAD OF new Date()
-            const txTimestamp = ctx.stub.getTxTimestamp();
-            const appliedAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
-
             job.applicants.push({
                 ...applicant,
-                appliedAt: appliedAt // Now deterministic!
+                appliedAt: new Date().toISOString()
             });
 
             await ctx.stub.putState(jobId, Buffer.from(JSON.stringify(job)));

@@ -8,6 +8,7 @@ fi
 
 # Set path to binaries
 export PATH=${PWD}/fabric-samples/bin:$PATH
+export FABRIC_CFG_PATH=${PWD}/fabric-samples/config/
 
 # Start the test network with Certificate Authorities
 echo "Starting Fabric network with CAs..."
@@ -17,22 +18,26 @@ cd fabric-samples/test-network
 ./network.sh down
 
 # Remove any existing chaincode containers and images
-docker rm -f $(docker ps -aq)
-docker rmi -f $(docker images -q)
+docker rm -f $(docker ps -aq) 2>/dev/null || true
+docker rmi -f $(docker images -q "dev-peer*") 2>/dev/null || true
+docker volume prune -f
 
 # Start the network with CAs and create channel
+echo "Starting network with CAs..."
 ./network.sh up createChannel -c mychannel -s couchdb -ca
 
 # Wait for all services to be fully up
 echo "Waiting for services to start..."
-sleep 30
+sleep 15
 
 # Check if all containers are running (including CAs)
 echo "Checking container status..."
 docker ps
 
-echo "Deploying chaincode..."
-./network.sh deployCC -ccn cvchaincode -ccp ../../server/chaincode -ccl javascript -c mychannel
-
+# Deploy chaincode using our custom script
 cd ../..
-echo "Fabric network with CAs is running!"
+echo "Deploying chaincode..."
+chmod +x scripts/deployChaincode.sh
+./scripts/deployChaincode.sh
+
+echo "Fabric network with CAs is running and chaincode is deployed!"
