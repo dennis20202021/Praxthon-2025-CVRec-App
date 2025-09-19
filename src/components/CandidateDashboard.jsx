@@ -1,182 +1,209 @@
-import React, { useState } from "react";
+import { Box, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  MenuItem,
-  Card,
-  CardContent,
-  CardActions,
-  Chip,
-  Grid,
-  Tabs,
-  Tab,
-  AppBar,
-  IconButton,
-} from "@mui/material";
-import {
-  LinkedIn as LinkedInIcon,
-  Language as LanguageIcon,
-  Work as WorkIcon,
-  Logout as LogoutIcon,
+  Search as SearchIcon,
+  CloudUpload as CloudUploadIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 
-function CandidateDashboard({ onLogout, user }) {
-  const [tabValue, setTabValue] = useState(0);
-  const [experienceLevel, setExperienceLevel] = useState("");
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const jobListings = [
-    {
-      title: "Senior Frontend Developer",
-      company: "TechCorp Inc.",
-      location: "New York, NY",
-      description: "We are looking for an experienced frontend developer with React expertise to join our growing team.",
-      requirements: "5+ years experience, React, JavaScript, HTML/CSS",
-      salary: "$120k - $150k",
-      remote: false,
-    },
-    {
-      title: "UX/UI Designer",
-      company: "DesignHub",
-      location: "Remote",
-      description: "Join our design team to create beautiful and functional user interfaces for our clients.",
-      requirements: "3+ years experience, Figma, Sketch, Adobe XD",
-      salary: "$80k - $110k",
-      remote: true,
-    },
-    {
-      title: "Blockchain Developer",
-      company: "CryptoInnovations",
-      location: "San Francisco, CA",
-      description: "Seeking a blockchain developer with Hyperledger Fabric experience to build enterprise solutions.",
-      requirements: "4+ years experience, Hyperledger, Node.js, Go",
-      salary: "$140k - $180k",
-      remote: false,
-    },
-  ];
+function CandidateDashboard({ user }) {
+  const navigate = useNavigate();
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
       {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          mb: 4,
+          gap: { xs: 2, sm: 0 },
+        }}
+      >
         <Box>
-          <Typography variant="h2" gutterBottom>
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{
+              color: "#FFD700",
+              fontSize: { xs: "1.8rem", sm: "2.2rem", md: "2.5rem" },
+            }}
+          >
             Candidate Dashboard
           </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.8 }}>
-            Welcome, {user?.name || "John Doe"}! Here are your job matches.
+          <Typography variant="body1" sx={{ opacity: 0.8, color: "white" }}>
+            Welcome, {user?.name || "John Doe"}!
           </Typography>
         </Box>
+      </Box>
+
+      {/* Navigation */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          mb: 4,
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Browse Jobs - Blue Gradient */}
         <Button
-          variant="outlined"
-          color="warning"
-          startIcon={<LogoutIcon />}
-          onClick={onLogout}
+          variant="contained"
+          sx={{
+            background: "linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 25px rgba(79, 172, 254, 0.4)",
+            },
+            py: 2,
+            px: 3,
+            borderRadius: "12px",
+            minWidth: { xs: "100%", sm: "180px" },
+            textAlign: "center",
+            transition: "all 0.3s ease",
+          }}
+          startIcon={<SearchIcon />}
+          onClick={() => navigate("/jobs")}
         >
-          Logout
+          Browse Jobs
+        </Button>
+
+        {/* Upload CV - Green Gradient */}
+        <Button
+          variant="contained"
+          sx={{
+            background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #38f9d7 0%, #43e97b 100%)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 25px rgba(67, 233, 123, 0.4)",
+            },
+            py: 2,
+            px: 3,
+            borderRadius: "12px",
+            minWidth: { xs: "100%", sm: "180px" },
+            textAlign: "center",
+            transition: "all 0.3s ease",
+          }}
+          startIcon={<CloudUploadIcon />}
+          onClick={() => navigate("/upload-cv")}
+        >
+          Upload CV
+        </Button>
+
+        {/* My Profile - Purple Gradient */}
+        <Button
+          variant="contained"
+          sx={{
+            background: "linear-gradient(135deg, #9D50BB 0%, #6E48AA 100%)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #6E48AA 0%, #9D50BB 100%)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 25px rgba(157, 80, 187, 0.4)",
+            },
+            py: 2,
+            px: 3,
+            borderRadius: "12px",
+            minWidth: { xs: "100%", sm: "180px" },
+            textAlign: "center",
+            transition: "all 0.3s ease",
+          }}
+          startIcon={<PersonIcon />}
+          onClick={() => navigate("/profile")}
+        >
+          My Profile
         </Button>
       </Box>
 
-      {/* Search Section */}
-      <Card sx={{ mb: 4, p: 3 }}>
-        <Typography variant="h3" gutterBottom>
-          Find Your Dream Job
+      {/* Quick Stats */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <Box
+          sx={{
+            p: { xs: 1.5, sm: 2 },
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            textAlign: "center",
+            flex: 1,
+            background: "rgba(26, 26, 46, 0.5)",
+            backdropFilter: "blur(10px)",
+            minWidth: { xs: "100%", sm: "auto" },
+          }}
+        >
+          <Typography variant="h4" sx={{ color: "#4FACFE", mb: 1 }}>
+            5
+          </Typography>
+          <Typography variant="body2" sx={{ color: "white", opacity: 0.9 }}>
+            Jobs Applied
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            p: { xs: 1.5, sm: 2 },
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            textAlign: "center",
+            flex: 1,
+            background: "rgba(26, 26, 46, 0.5)",
+            backdropFilter: "blur(10px)",
+            minWidth: { xs: "100%", sm: "auto" },
+          }}
+        >
+          <Typography variant="h4" sx={{ color: "#43e97b", mb: 1 }}>
+            2
+          </Typography>
+          <Typography variant="body2" sx={{ color: "white", opacity: 0.9 }}>
+            Interviews
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            p: { xs: 1.5, sm: 2 },
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            textAlign: "center",
+            flex: 1,
+            background: "rgba(26, 26, 46, 0.5)",
+            backdropFilter: "blur(10px)",
+            minWidth: { xs: "100%", sm: "auto" },
+          }}
+        >
+          <Typography variant="h4" sx={{ color: "#9D50BB", mb: 1 }}>
+            1
+          </Typography>
+          <Typography variant="body2" sx={{ color: "white", opacity: 0.9 }}>
+            Offers
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Recent Activity */}
+      <Box>
+        <Typography
+          variant="h3"
+          gutterBottom
+          sx={{
+            color: "#FFD700",
+            fontSize: { xs: "1.5rem", sm: "2rem" },
+          }}
+        >
+          Recent Activity
         </Typography>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={3}>
-            <TextField
-              fullWidth
-              placeholder="Job title, keywords"
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <TextField
-              fullWidth
-              placeholder="Location"
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <TextField
-              fullWidth
-              select
-              value={experienceLevel}
-              onChange={(e) => setExperienceLevel(e.target.value)}
-              variant="outlined"
-              label="Experience Level"
-            >
-              <MenuItem value="">All Levels</MenuItem>
-              <MenuItem value="entry">Entry Level</MenuItem>
-              <MenuItem value="mid">Mid Level</MenuItem>
-              <MenuItem value="senior">Senior Level</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Button fullWidth variant="contained" color="error" sx={{ height: "56px" }}>
-              Search
-            </Button>
-          </Grid>
-        </Grid>
-      </Card>
-
-      {/* Tabs */}
-      <AppBar position="static" sx={{ mb: 3, borderRadius: 1 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} centered>
-          <Tab label="All Jobs" />
-          <Tab label="Recent" />
-          <Tab label="Saved" />
-        </Tabs>
-      </AppBar>
-
-      {/* Job Listings */}
-      <Grid container spacing={3}>
-        {jobListings.map((job, index) => (
-          <Grid item xs={12} md={6} lg={4} key={index}>
-            <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h5" gutterBottom color="primary">
-                  {job.title}
-                </Typography>
-                <Typography variant="subtitle1" color="error" gutterBottom>
-                  {job.company} • {job.location}
-                  {job.remote && <Chip label="Remote" size="small" sx={{ ml: 1 }} />}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  {job.description}
-                </Typography>
-                <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-                  <strong>Requirements:</strong> {job.requirements}
-                </Typography>
-                <Box sx={{ display: "flex", mt: 2, gap: 1 }}>
-                  <IconButton size="small">
-                    <LinkedInIcon />
-                  </IconButton>
-                  <IconButton size="small">
-                    <LanguageIcon />
-                  </IconButton>
-                  <IconButton size="small">
-                    <WorkIcon />
-                  </IconButton>
-                </Box>
-              </CardContent>
-              <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
-                <Typography variant="h6" color="warning.main">
-                  {job.salary}
-                </Typography>
-                <Button variant="contained" color="error">
-                  Apply Now
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+        <Typography variant="body1" sx={{ opacity: 0.7, color: "white" }}>
+          You haven't applied to any jobs yet. Start browsing available
+          positions!
+        </Typography>
+      </Box>
     </Box>
   );
 }

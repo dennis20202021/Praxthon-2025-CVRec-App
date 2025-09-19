@@ -38,6 +38,10 @@ docker ps
 cd ../..
 echo "Deploying chaincode..."
 chmod +x scripts/deployChaincode.sh
-./scripts/deployChaincode.sh
+npm run deploy:chaincode
+
+echo "Importing admin identities into wallet..."
+chmod +x server/importFabricAdmin.js
+npm run import:admin-user
 
 echo "Fabric network with CAs is running and chaincode is deployed!"

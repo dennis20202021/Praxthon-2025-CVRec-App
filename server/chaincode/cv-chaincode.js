@@ -160,12 +160,33 @@ class CVChaincode extends Contract {
             const txTimestamp = ctx.stub.getTxTimestamp();
             const createdAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
 
+            // Parse the job data
+            const parsedData = JSON.parse(jobData);
+
+            // Extract salary fields if they exist, otherwise use the salary string
+            const salary = parsedData.salaryAmount && parsedData.salaryCurrency && parsedData.salaryFrequency
+                ? `${parsedData.salaryCurrency} ${parsedData.salaryAmount}/${parsedData.salaryFrequency}`
+                : parsedData.salary;
+
+            // Handle work location type - this is the key fix!
+            const workLocationType = parsedData.workLocationType ||
+                (parsedData.remote ? "remote" :
+                    (parsedData.hybrid ? "hybrid" : "on-site"));
+
             const job = {
                 docType: 'job',
                 jobId: jobId,
-                ...JSON.parse(jobData),
+                title: parsedData.title,
+                company: parsedData.company,
+                location: parsedData.location,
+                description: parsedData.description,
+                requirements: parsedData.requirements,
+                salary: salary, // Use the formatted salary
                 createdAt: createdAt, // Now deterministic!
-                applicants: []
+                applicants: [],
+                remote: parsedData.remote || false,
+                hybrid: parsedData.hybrid || false,
+                workLocationType: workLocationType // Add the work location type
             };
 
             await ctx.stub.putState(jobId, Buffer.from(JSON.stringify(job)));
@@ -225,13 +246,23 @@ class CVChaincode extends Contract {
             const job = JSON.parse(jobJSON.toString());
             const applicant = JSON.parse(applicantData);
 
+            // Check if applicant has already applied
+            if (job.applicants && job.applicants.some(app => app.email === applicant.email)) {
+                throw new Error(`Applicant ${applicant.email} has already applied to this job`);
+            }
+
             // USE TRANSACTION TIMESTAMP INSTEAD OF new Date()
             const txTimestamp = ctx.stub.getTxTimestamp();
             const appliedAt = new Date(txTimestamp.seconds * 1000 + txTimestamp.nanos / 1000000).toISOString();
 
+            if (!job.applicants) {
+                job.applicants = [];
+            }
+
             job.applicants.push({
                 ...applicant,
-                appliedAt: appliedAt // Now deterministic!
+                appliedAt: appliedAt, // Now deterministic!
+                status: "Pending" // Add status field for tracking
             });
 
             await ctx.stub.putState(jobId, Buffer.from(JSON.stringify(job)));
@@ -263,6 +294,52 @@ class CVChaincode extends Contract {
             return allResults;
         } catch (error) {
             console.error('Error in _getAllResults:', error);
+            throw error;
+        }
+    }
+
+    // Get all users with a specific role
+    async GetAllUsersByRole(ctx, role) {
+        try {
+            const query = {
+                selector: {
+                    docType: 'user',
+                    role: role
+                }
+            };
+
+            const iterator = await ctx.stub.getQueryResult(JSON.stringify(query));
+            return await this._getAllResults(iterator);
+        } catch (error) {
+            console.error('Error in GetAllUsersByRole:', error);
+            throw error;
+        }
+    }
+
+    // Update user profile (for CV upload)
+    async UpdateUser(ctx, userId, userData) {
+        try {
+            const exists = await this.UserExists(ctx, userId);
+            if (!exists) {
+                throw new Error(`The user ${userId} does not exist`);
+            }
+
+            const user = JSON.parse(userData);
+            const existingUserJSON = await ctx.stub.getState(userId);
+            const existingUser = JSON.parse(existingUserJSON.toString());
+
+            // Merge existing user data with new data
+            const updatedUser = {
+                ...existingUser,
+                ...user,
+                userId: existingUser.userId, // Ensure userId doesn't change
+                email: existingUser.email, // Ensure email doesn't change
+            };
+
+            await ctx.stub.putState(userId, Buffer.from(JSON.stringify(updatedUser)));
+            return JSON.stringify(updatedUser);
+        } catch (error) {
+            console.error('Error in UpdateUser:', error);
             throw error;
         }
     }

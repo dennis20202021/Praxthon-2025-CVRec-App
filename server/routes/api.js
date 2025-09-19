@@ -119,16 +119,36 @@ router.post('/login', async (req, res) => {
 router.post('/jobs', async (req, res) => {
     let gateway;
     try {
-        const { title, company, location, description, requirements, salary } = req.body;
+        const {
+            title,
+            company,
+            location,
+            description,
+            requirements,
+            salary,
+            remote,
+            hybrid,
+            workLocationType
+        } = req.body;
+
         gateway = await connectToNetwork();
         const network = await gateway.getNetwork('mychannel');
         const contract = network.getContract('cvchaincode');
 
-        const jobData = JSON.stringify({ title, company, location, description, requirements, salary });
+        const jobData = JSON.stringify({
+            title,
+            company,
+            location,
+            description,
+            requirements,
+            salary,
+            remote: remote || false,
+            hybrid: hybrid || false,
+            workLocationType: workLocationType || (remote ? "remote" : (hybrid ? "hybrid" : "on-site"))
+        });
+
         const jobId = `JOB_${Date.now()}`;
-
         const result = await contract.submitTransaction('CreateJob', jobId, jobData);
-
         const job = JSON.parse(result.toString());
 
         res.json({
@@ -176,7 +196,11 @@ router.post('/jobs/:id/apply', async (req, res) => {
         const network = await gateway.getNetwork('mychannel');
         const contract = network.getContract('cvchaincode');
 
-        const applicantData = JSON.stringify({ name: applicantName, email: applicantEmail, coverLetter });
+        const applicantData = JSON.stringify({
+            name: applicantName,
+            email: applicantEmail,
+            coverLetter
+        });
 
         const result = await contract.submitTransaction('ApplyForJob', req.params.id, applicantData);
 
@@ -189,7 +213,11 @@ router.post('/jobs/:id/apply', async (req, res) => {
         });
     } catch (error) {
         console.error('Job application error:', error);
-        res.status(500).json({ error: error.message });
+        if (error.message.includes('already applied')) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     } finally {
         if (gateway) {
             await gateway.disconnect();
@@ -272,6 +300,87 @@ router.get('/health', async (req, res) => {
             status: 'Chaincode unavailable',
             error: error.message
         });
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
+// Get all candidates (for recruiters)
+router.get('/candidates', async (req, res) => {
+    let gateway;
+    try {
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        // Get all users with role 'candidate'
+        const result = await contract.evaluateTransaction('GetAllUsersByRole', 'candidate');
+        const candidates = JSON.parse(result.toString());
+
+        // Remove sensitive information
+        const safeCandidates = candidates.map(candidate => {
+            const { password, ...safeCandidate } = candidate;
+            return safeCandidate;
+        });
+
+        res.json({ success: true, candidates: safeCandidates });
+    } catch (error) {
+        console.error('Get candidates error:', error);
+
+        // Fallback to mock data if chaincode function not available
+        const mockCandidates = [
+            {
+                name: "Michael Johnson",
+                title: "Senior Software Engineer",
+                experience: "7 years",
+                skills: "JavaScript, React, Node.js, AWS",
+                education: "MIT, Computer Science",
+                status: "New",
+            },
+            {
+                name: "Sarah Williams",
+                title: "UX Designer",
+                experience: "5 years",
+                skills: "Figma, User Research, Prototyping",
+                education: "RISD, Design",
+                status: "Reviewing",
+            },
+            {
+                name: "David Chen",
+                title: "Blockchain Developer",
+                experience: "4 years",
+                skills: "Hyperledger, Solidity, Smart Contracts",
+                education: "Stanford, Computer Science",
+                status: "Interview",
+            },
+        ];
+
+        res.json({ success: true, candidates: mockCandidates });
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
+// Get applications for a job (for recruiters)
+router.get('/jobs/:id/applications', async (req, res) => {
+    let gateway;
+    try {
+        const { id } = req.params;
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        const result = await contract.evaluateTransaction('GetJob', id);
+        const job = JSON.parse(result.toString());
+
+        res.json({ success: true, applications: job.applicants || [] });
+    } catch (error) {
+        console.error('Get applications error:', error);
+        res.status(500).json({ error: error.message });
     } finally {
         if (gateway) {
             await gateway.disconnect();

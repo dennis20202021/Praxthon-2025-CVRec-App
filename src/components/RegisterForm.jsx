@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
@@ -9,19 +9,46 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  LinearProgress,
+  Snackbar,
 } from "@mui/material";
 import LinkIcon from "@mui/icons-material/Link";
 
 function RegisterForm({ onRegister }) {
   const [role, setRole] = useState("candidate");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "" });
+  const [showMessage, setShowMessage] = useState(false);
+  const [progress, setProgress] = useState(100);
 
-  // In handleSubmit function:
+  useEffect(() => {
+    let timer;
+    if (showMessage) {
+      setProgress(100);
+      timer = setInterval(() => {
+        setProgress((prev) => Math.max(0, prev - 100 / 25)); // 5 seconds = 25 intervals of 200ms
+      }, 200);
+
+      const timeout = setTimeout(() => {
+        setShowMessage(false);
+        clearInterval(timer);
+      }, 5000);
+
+      return () => {
+        clearTimeout(timeout);
+        clearInterval(timer);
+      };
+    }
+  }, [showMessage]);
+
+  const showMessageWithType = (text, type) => {
+    setMessage({ text, type });
+    setShowMessage(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     const name = e.target.registerName.value;
     const email = e.target.registerEmail.value;
@@ -37,20 +64,22 @@ function RegisterForm({ onRegister }) {
 
       if (response.data.success) {
         onRegister(role, response.data.user);
+        showMessageWithType("Registration successful!", "success");
       } else {
-        setError(response.data.error || "Registration failed");
+        const errorMsg = response.data.error || "Registration failed";
+        showMessageWithType(errorMsg, "error");
       }
     } catch (error) {
+      let errorMsg;
       if (error.response && error.response.status === 503) {
-        setError(
-          "Blockchain network is currently unavailable. Please try again later."
-        );
+        errorMsg =
+          "Blockchain network is currently unavailable. Please try again later.";
       } else {
-        setError(
+        errorMsg =
           error.response?.data?.error ||
-            "Registration failed. Please check your connection."
-        );
+          "Registration failed. Please check your connection.";
       }
+      showMessageWithType(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -61,6 +90,39 @@ function RegisterForm({ onRegister }) {
       <Typography variant="h4" component="h2" gutterBottom align="center">
         Create an Account
       </Typography>
+
+      {/* Message Snackbar */}
+      <Snackbar
+        open={showMessage}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Box sx={{ width: "100%" }}>
+          <Alert
+            severity={message.type}
+            sx={{
+              width: "100%",
+              alignItems: "center",
+              "& .MuiAlert-message": {
+                flexGrow: 1,
+              },
+            }}
+          >
+            {message.text}
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                mt: 1,
+                height: 4,
+                backgroundColor: "rgba(255,255,255,0.3)",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor: "rgba(255,255,255,0.7)",
+                },
+              }}
+            />
+          </Alert>
+        </Box>
+      </Snackbar>
 
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
         <TextField
@@ -114,12 +176,6 @@ function RegisterForm({ onRegister }) {
         >
           {loading ? <CircularProgress size={24} /> : "Register"}
         </Button>
-
-        {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
-          </Alert>
-        )}
       </Box>
 
       <Box
