@@ -36,7 +36,7 @@ function UploadCV({ user }) {
   };
 
   return (
-    <Paper elevation={8} sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 4 }}>
+    <Paper elevation={8} sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 8, mb: 8 }}>
       <Typography variant="h4" component="h2" gutterBottom align="center">
         Upload Your CV
       </Typography>

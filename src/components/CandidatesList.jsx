@@ -206,7 +206,7 @@ function CandidatesList({ user }) {
       </AppBar>
 
       {/* Candidate Cards */}
-      <Grid container spacing={{ xs: 2, md: 3 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{  mb: 8, mt: 8 }}>
         {filteredCandidates.length === 0 ? (
           <Grid item xs={12}>
             <Typography

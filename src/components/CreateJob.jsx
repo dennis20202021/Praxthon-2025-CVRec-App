@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -17,6 +17,8 @@ import {
   CardContent,
   Switch,
   FormControlLabel,
+  Snackbar,
+  LinearProgress,
 } from "@mui/material";
 import axios from "axios";
 import {
@@ -34,8 +36,9 @@ import "react-quill/dist/quill.snow.css";
 
 function CreateJob({ user }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "" });
+  const [showMessage, setShowMessage] = useState(false);
+  const [progress, setProgress] = useState(100);
   const [salaryFrequency, setSalaryFrequency] = useState("month");
   const [currency, setCurrency] = useState("USD");
   const [workLocationType, setWorkLocationType] = useState("on-site");
@@ -65,6 +68,31 @@ function CreateJob({ user }) {
     "link",
   ];
 
+  useEffect(() => {
+    let timer;
+    if (showMessage) {
+      setProgress(100);
+      timer = setInterval(() => {
+        setProgress((prev) => Math.max(0, prev - 100 / 25)); // 5 seconds = 25 intervals of 200ms
+      }, 200);
+
+      const timeout = setTimeout(() => {
+        setShowMessage(false);
+        clearInterval(timer);
+      }, 5000);
+
+      return () => {
+        clearTimeout(timeout);
+        clearInterval(timer);
+      };
+    }
+  }, [showMessage]);
+
+  const showMessageWithType = (text, type) => {
+    setMessage({ text, type });
+    setShowMessage(true);
+  };
+
   const handleWorkLocationChange = (type) => {
     setWorkLocationType(type);
   };
@@ -72,8 +100,7 @@ function CreateJob({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
+    setShowMessage(false);
 
     // Format the salary with currency and frequency for display
     const salary = `${currency} ${salaryAmount}/${salaryFrequency}`;
@@ -91,7 +118,7 @@ function CreateJob({ user }) {
     try {
       const response = await axios.post("/api/jobs", jobData);
       if (response.data.success) {
-        setSuccess("Job posted successfully!");
+        showMessageWithType("Job posted successfully!", "success");
         e.target.reset();
         setSalaryFrequency("month");
         setCurrency("USD");
@@ -101,14 +128,50 @@ function CreateJob({ user }) {
         setSalaryAmount("");
       }
     } catch (error) {
-      setError(error.response?.data?.error || "Failed to create job");
+      showMessageWithType(
+        error.response?.data?.error || "Failed to create job",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1000, mx: "auto" }}>
+    <Box sx={{ p: 3, maxWidth: 1000, mx: "auto", mb: 8 }}>
+      {/* Message Snackbar */}
+      <Snackbar
+        open={showMessage}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Box sx={{ width: "100%" }}>
+          <Alert
+            severity={message.type}
+            sx={{
+              width: "100%",
+              alignItems: "center",
+              "& .MuiAlert-message": {
+                flexGrow: 1,
+              },
+            }}
+          >
+            {message.text}
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                mt: 1,
+                height: 4,
+                backgroundColor: "rgba(255,255,255,0.3)",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor: "rgba(255,255,255,0.7)",
+                },
+              }}
+            />
+          </Alert>
+        </Box>
+      </Snackbar>
+
       <Typography
         variant="h3"
         gutterBottom
@@ -584,18 +647,6 @@ function CreateJob({ user }) {
             >
               {loading ? <CircularProgress size={24} /> : "Post Job"}
             </Button>
-
-            {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
-              </Alert>
-            )}
-
-            {success && (
-              <Alert severity="success" sx={{ mt: 2 }}>
-                {success}
-              </Alert>
-            )}
           </Box>
         </CardContent>
       </Card>

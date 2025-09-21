@@ -66,7 +66,7 @@ function LoginForm({ onLogin }) {
   };
 
   return (
-    <Paper elevation={8} sx={{ p: 4, maxWidth: 500, mx: "auto", mt: 4 }}>
+    <Paper elevation={8} sx={{ p: 4, maxWidth: 500, mx: "auto", mt: 4, mb: 8 }}>
       <Typography variant="h4" component="h2" gutterBottom align="center">
         Login to Your Account
       </Typography>

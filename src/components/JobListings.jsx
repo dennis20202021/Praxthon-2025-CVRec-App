@@ -390,7 +390,7 @@ function JobListings({ user }) {
   });
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, mb: 8 }}>
       <Typography variant="h2" gutterBottom sx={{ color: "#FFD700" }}>
         Available Jobs
       </Typography>
@@ -431,7 +431,7 @@ function JobListings({ user }) {
       {/* Search Section */}
       <Card
         sx={{
-          mb: 4,
+          mb: 8,
           p: 3,
           background: "rgba(26, 26, 46, 0.8)",
           color: "white",

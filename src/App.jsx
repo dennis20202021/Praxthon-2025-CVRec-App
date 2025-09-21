@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import {
@@ -21,6 +21,7 @@ import CandidatesList from "./components/CandidatesList";
 import UploadCV from "./components/UploadCV";
 import AboutUs from "./components/AboutUs";
 import AuthDialog from "./components/AuthDialog";
+import Footer from "./components/Footer";
 import theme from "./theme";
 
 function SimpleApp() {
@@ -122,6 +123,7 @@ function SimpleApp() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        <Footer />
       </Router>
     </ThemeProvider>
   );

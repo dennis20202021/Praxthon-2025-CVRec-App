@@ -216,9 +216,7 @@ function Hero() {
               flexDirection: "column",
               alignItems: "center",
               opacity: 0.7,
-              "&:hover": {
-                opacity: 1,
-              },
+              cursor: "pointer",
             }}
           >
             <Typography variant="body2" sx={{ mb: 1 }}>
@@ -228,6 +226,9 @@ function Hero() {
               sx={{
                 animation: `${float} 2s ease-in-out infinite`,
                 color: "#FFD700",
+                "&:hover": {
+                  opacity: 1,
+                },
               }}
             />
           </Box>
