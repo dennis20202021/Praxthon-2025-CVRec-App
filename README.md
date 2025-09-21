@@ -97,42 +97,47 @@ Download the latest release from [GitHub Releases](https://github.com/dennis2020
 
 ## 📁 Project Structure
 
-```json
+```text
 praxthon-project/
-├── public/                 # Static assets
-│   ├── img/
-│   │   └── CV-App-Logo.jpeg
-│   └── index.html
-├── fabric-samples/         # Hyperledger Fabric network
-├── src/                    # React application source
-│   ├── components/
-│   │   ├── Header.jsx      # Navigation header
-│   │   ├── Hero.jsx        # Landing page hero section
-│   │   ├── LoginForm.jsx   # User authentication
-│   │   ├── RegisterForm.jsx # User registration with blockchain identity
-│   │   ├── CandidateDashboard.jsx # Candidate interface
-│   │   ├── Footer.jsx      # Application footer
-│   │   └── RecruiterDashboard.jsx # Recruiter interface
-│   ├── App.js              # Main application component
-│   ├── theme.js            # Material-UI theme configuration
-│   └── index.js            # Application entry point
-├── server/                 # Backend server
-│   ├── chaincode/
-│   │   └── cv-chaincode.js # Smart contract implementation
-│   ├── network/
-│   │   ├── crypto/         # Cryptographic materials
-│   │   └── connection-org1.json # Blockchain connection profile
-│   ├── routes/
-│   │   └── api.js          # REST API endpoints
-│   └── wallet/             # Blockchain wallet storage
-├── scripts/                # Deployment and management scripts
-│   ├── startFabric.sh      # Fabric network initialization
-│   ├── updateChaincode.sh  # Chaincode update script
-│   └── deployChaincode.sh  # Chaincode deployment script
-├── package.json            # Project dependencies and scripts
-├── importFabricAdmin.js    # Admin identity importer
-├── server.js               # Express server entry point
-└── .gitignore             # Git ignore rules
+├── 📂 public/                 # Static assets and public files
+│   ├── 📂 img/                # Image assets
+│   │   └── 🖼️ CV-App-Logo.jpeg  # Application logo
+│   └── 🌐 index.html          # Main HTML template
+├── 📂 fabric-samples/         # Hyperledger Fabric network samples
+├── 📂 src/                    # React application source code
+│   ├── 📂 components/         # React components
+│   │   ├── 🧭 Header.jsx      # Navigation header component
+│   │   ├── 🦸 Hero.jsx        # Landing page hero section
+│   │   ├── 🔐 LoginForm.jsx   # User authentication form
+│   │   ├── 📝 RegisterForm.jsx # User registration with blockchain identity
+│   │   ├── 👨‍💼 CandidateDashboard.jsx # Candidate interface dashboard
+│   │   ├── 🦶 Footer.jsx      # Application footer component
+│   │   ├── 📄 PrivacyPolicyDialog.jsx # Privacy policy modal dialog
+│   │   ├── 📑 TermsOfServiceDialog.jsx # Terms of service modal dialog
+│   │   └── 👔 RecruiterDashboard.jsx # Recruiter interface dashboard
+│   ├── ⚛️ App.jsx             # Main application component
+│   ├── 🎨 theme.js            # Material-UI theme configuration
+│   └️ 🚀 index.js             # Application entry point
+├── 📂 server/                 # Backend server and blockchain integration
+│   ├── 📂 chaincode/          # Hyperledger Fabric chaincode
+│   │   └── 📜 cv-chaincode.js # Smart contract implementation
+│   ├── 📂 network/            # Blockchain network configuration
+│   │   ├── 🔐 crypto/         # Cryptographic materials and certificates
+│   │   └── 🔗 connection-org1.json # Blockchain connection profile
+│   ├── 📂 routes/             # API route handlers
+│   │   └── 🛣️ api.js          # REST API endpoints
+│   ├── 📂 wallet/             # Blockchain wallet storage
+│   ├── 👨‍💼 importFabricAdmin.js # Admin identity importer utility
+│   └️ 👤 registerUser.js      # User registration utility
+├── 📂 scripts/                # Deployment and management scripts
+│   ├── ⚡ startFabric.sh      # Fabric network initialization script
+│   └️ 🚀 deployChaincode.sh   # Chaincode deployment script
+├── ⚙️ .babelrc                # Babel configuration
+├── 🙈 .gitignore             # Git ignore rules
+├── 📦 package.json           # Project dependencies and scripts
+├── 📖 README.md              # Project documentation (this file)
+├── 🖥️ server.js              # Express server entry point
+└️ ⚛️ webpack.config.js       # Webpack configuration for React
 ```
 
 ## 🎯 Usage Guide
