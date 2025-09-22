@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Container,
@@ -20,27 +20,32 @@ import {
 } from "@mui/icons-material";
 import PrivacyPolicyDialog from "./PrivacyPolicyDialog";
 import TermsOfServiceDialog from "./TermsOfServiceDialog";
+import CookiePolicyDialog from "./CookiePolicyDialog"; // Import the new component
 
 function Footer() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+  const [cookieDialogOpen, setCookieDialogOpen] = useState(false); // Add state for cookie dialog
 
   const handlePrivacyOpen = () => setPrivacyDialogOpen(true);
   const handlePrivacyClose = () => setPrivacyDialogOpen(false);
   const handleTermsOpen = () => setTermsDialogOpen(true);
   const handleTermsClose = () => setTermsDialogOpen(false);
+  const handleCookieOpen = () => setCookieDialogOpen(true); // Add handler for cookie dialog
+  const handleCookieClose = () => setCookieDialogOpen(false); // Add handler for cookie dialog
 
   const handlePrivacyAccept = () => {
-    // This is just to close the dialog when accepted from footer
-    // No need to set any agreement state like in RegisterForm
     setPrivacyDialogOpen(false);
   };
 
   const handleTermsAccept = () => {
-    // This is just to close the dialog when accepted from footer
     setTermsDialogOpen(false);
+  };
+
+  const handleCookieAccept = () => {
+    setCookieDialogOpen(false);
   };
 
   return (
@@ -229,7 +234,7 @@ function Footer() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <PhoneIcon sx={{ color: "#FFD700", fontSize: 20 }} />
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  +1 (555) 123-4567
+                  +57 311-761-6612
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
@@ -237,9 +242,9 @@ function Footer() {
                   sx={{ color: "#FFD700", fontSize: 20, mt: 0.5 }}
                 />
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  123 Blockchain Avenue
+                  Oficina 123, Edificio World Master Technology
                   <br />
-                  Tech City, TC 12345
+                  Bogotá D.C, Colombia
                 </Typography>
               </Box>
             </Box>
@@ -281,7 +286,9 @@ function Footer() {
               Terms of Service
             </Link>
             <Link
-              href="#"
+              component="button"
+              type="button"
+              onClick={handleCookieOpen}
               color="inherit"
               sx={{ opacity: 0.7, "&:hover": { opacity: 1, color: "#FFD700" } }}
             >
@@ -302,6 +309,12 @@ function Footer() {
         open={termsDialogOpen}
         onClose={handleTermsClose}
         onAccept={handleTermsAccept}
+      />
+
+      <CookiePolicyDialog
+        open={cookieDialogOpen}
+        onClose={handleCookieClose}
+        onAccept={handleCookieAccept}
       />
     </Box>
   );
