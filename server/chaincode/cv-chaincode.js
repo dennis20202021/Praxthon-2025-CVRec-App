@@ -144,7 +144,19 @@ class CVChaincode extends Contract {
             return JSON.stringify(userWithoutPassword);
         } catch (error) {
             console.error('Error in AuthenticateUser:', error);
-            throw new Error('Invalid credentials');
+
+            // Check if it's a "user not found" error from GetUserByEmail
+            if (error.message.includes('User with email') && error.message.includes('does not exist')) {
+                throw new Error('User not found');
+            }
+            // Re-throw the "Invalid password" error as is
+            else if (error.message.includes('Invalid password')) {
+                throw error;
+            }
+            // For any other error, throw generic credentials error
+            else {
+                throw new Error('Invalid credentials');
+            }
         }
     }
 
@@ -193,6 +205,54 @@ class CVChaincode extends Contract {
             return JSON.stringify(job);
         } catch (error) {
             console.error('Error in CreateJob:', error);
+            throw error;
+        }
+    }
+
+    async UpdateJob(ctx, jobId, jobData) {
+        try {
+            const exists = await this.JobExists(ctx, jobId);
+            if (!exists) {
+                throw new Error(`The job ${jobId} does not exist`);
+            }
+
+            const jobJSON = await ctx.stub.getState(jobId);
+            const existingJob = JSON.parse(jobJSON.toString());
+            const updatedData = JSON.parse(jobData);
+
+            // Merge existing job data with new data
+            const updatedJob = {
+                ...existingJob,
+                ...updatedData,
+                jobId: existingJob.jobId, // Ensure jobId doesn't change
+                applicants: existingJob.applicants || [], // Preserve applicants
+                createdAt: existingJob.createdAt // Preserve creation date
+            };
+
+            // Handle salary formatting if new salary fields are provided
+            if (updatedData.salaryAmount && updatedData.salaryCurrency && updatedData.salaryFrequency) {
+                updatedJob.salary = `${updatedData.salaryCurrency} ${updatedData.salaryAmount}/${updatedData.salaryFrequency}`;
+            }
+
+            await ctx.stub.putState(jobId, Buffer.from(JSON.stringify(updatedJob)));
+            return JSON.stringify(updatedJob);
+        } catch (error) {
+            console.error('Error in UpdateJob:', error);
+            throw error;
+        }
+    }
+
+    async DeleteJob(ctx, jobId) {
+        try {
+            const exists = await this.JobExists(ctx, jobId);
+            if (!exists) {
+                throw new Error(`The job ${jobId} does not exist`);
+            }
+
+            await ctx.stub.deleteState(jobId);
+            return `Job ${jobId} was deleted successfully`;
+        } catch (error) {
+            console.error('Error in DeleteJob:', error);
             throw error;
         }
     }

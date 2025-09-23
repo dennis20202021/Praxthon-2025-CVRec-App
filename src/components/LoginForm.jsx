@@ -52,14 +52,29 @@ function LoginForm({ onLogin }) {
 
     const email = e.target.loginEmail.value;
     const password = e.target.loginPassword.value;
+    const selectedRole = role;
 
     try {
-      const response = await axios.post("/api/login", { email, password });
-      onLogin(response.data.user.role, response.data.user);
-      showMessageWithType("Login successful!", "success");
+      const response = await axios.post("/api/login", {
+        email,
+        password,
+        role: selectedRole,
+      });
+
+      if (response.data.success) {
+        const user = response.data.user;
+        onLogin(user.role, user);
+        showMessageWithType("Login successful!", "success");
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.error || "Login failed";
-      showMessageWithType(errorMsg, "error");
+
+      // Simple logic - just two cases
+      if (error.response?.status === 404) {
+        showMessageWithType(errorMsg, "error");
+      } else {
+        showMessageWithType(errorMsg, "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -155,12 +170,13 @@ function LoginForm({ onLogin }) {
           alignItems: "center",
           mt: 3,
           p: 1,
-          bgcolor: "success.light",
+          bgcolor: "rgba(76, 201, 240, 0.1)",
           borderRadius: 1,
+          border: "1px solid rgba(76, 201, 240, 0.3)",
         }}
       >
-        <LinkIcon sx={{ mr: 1 }} />
-        <Typography variant="body2">
+        <LinkIcon sx={{ mr: 1, color: "#4CC9F0" }} />
+        <Typography variant="body2" sx={{ color: "#4CC9F0" }}>
           Connected to Hyperledger Fabric Network
         </Typography>
       </Box>

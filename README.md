@@ -116,7 +116,10 @@ praxthon-project/
 │   │   ├── 🦶 Footer.jsx               # Application footer component
 │   │   ├── 📄 PrivacyPolicyDialog.jsx  # Privacy policy modal dialog
 │   │   ├── 📑 TermsOfServiceDialog.jsx # Terms of service modal dialog
-│   │   └── 👔 RecruiterDashboard.jsx   # Recruiter interface dashboard
+│   │   ├── 🍪 CookiePolicyDialog.jsx   # Cookies policy modal dialog
+│   │   ├── 👔 RecruiterDashboard.jsx   # Recruiter interface dashboard
+│   │   ├── 💼 JobCard.jsx              # Job listing card component
+│   │   └── 📋 JobForm.jsx              # Job creation/editing form component
 │   ├── ⚛️ App.jsx                      # Main application component
 │   ├── 🎨 theme.js                     # Material-UI theme configuration
 │   └️ 🚀 index.js                       # Application entry point

@@ -115,7 +115,10 @@ function RegisterForm({ onRegister }) {
 
   return (
     <>
-      <Paper elevation={8} sx={{ p: 4, maxWidth: 500, mx: "auto", mt: 4, mb: 8 }}>
+      <Paper
+        elevation={8}
+        sx={{ p: 4, maxWidth: 500, mx: "auto", mt: 4, mb: 8 }}
+      >
         <Typography variant="h4" component="h2" gutterBottom align="center">
           Create an Account
         </Typography>
@@ -271,12 +274,13 @@ function RegisterForm({ onRegister }) {
             alignItems: "center",
             mt: 3,
             p: 1,
-            bgcolor: "success.light",
+            bgcolor: "rgba(76, 201, 240, 0.1)",
             borderRadius: 1,
+            border: "1px solid rgba(76, 201, 240, 0.3)",
           }}
         >
-          <LinkIcon sx={{ mr: 1 }} />
-          <Typography variant="body2">
+          <LinkIcon sx={{ mr: 1, color: "#4CC9F0" }} />
+          <Typography variant="body2" sx={{ color: "#4CC9F0" }}>
             Your identity will be stored on blockchain
           </Typography>
         </Box>

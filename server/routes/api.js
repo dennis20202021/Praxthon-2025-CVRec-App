@@ -96,18 +96,31 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     let gateway;
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
         gateway = await connectToNetwork();
         const network = await gateway.getNetwork('mychannel');
         const contract = network.getContract('cvchaincode');
 
+        // Authenticate user (this checks email + password)
         const result = await contract.evaluateTransaction('AuthenticateUser', email, password);
-
         const user = JSON.parse(result.toString());
+
+        // Now check if the role matches
+        if (user.role !== role) {
+            return res.status(401).json({ error: 'Login failed. Please verify your credentials and try again!' });
+        }
+
         res.json({ success: true, user });
+
     } catch (error) {
         console.error('Login error:', error);
-        res.status(401).json({ error: 'Invalid credentials' });
+
+        // Simple error handling - just two cases
+        if (error.message.includes('User not found')) {
+            res.status(404).json({ error: "Oops! User not found in our records. Please double-check your details or consider signing up" });
+        } else {
+            res.status(401).json({ error: 'Login failed. Please verify your credentials and try again!' });
+        }
     } finally {
         if (gateway) {
             await gateway.disconnect();
@@ -218,6 +231,86 @@ router.post('/jobs/:id/apply', async (req, res) => {
         } else {
             res.status(500).json({ error: error.message });
         }
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
+// Update a job
+router.put('/jobs/:id', async (req, res) => {
+    let gateway;
+    try {
+        const {
+            title,
+            company,
+            location,
+            description,
+            requirements,
+            salary,
+            remote,
+            hybrid,
+            workLocationType,
+            salaryAmount,
+            salaryCurrency,
+            salaryFrequency
+        } = req.body;
+
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        const jobData = JSON.stringify({
+            title,
+            company,
+            location,
+            description,
+            requirements,
+            salary,
+            remote: remote || false,
+            hybrid: hybrid || false,
+            workLocationType: workLocationType || (remote ? "remote" : (hybrid ? "hybrid" : "on-site")),
+            salaryAmount,
+            salaryCurrency,
+            salaryFrequency
+        });
+
+        const result = await contract.submitTransaction('UpdateJob', req.params.id, jobData);
+        const job = JSON.parse(result.toString());
+
+        res.json({
+            success: true,
+            message: 'Job updated successfully',
+            job
+        });
+    } catch (error) {
+        console.error('Job update error:', error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
+// Delete a job
+router.delete('/jobs/:id', async (req, res) => {
+    let gateway;
+    try {
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        const result = await contract.submitTransaction('DeleteJob', req.params.id);
+
+        res.json({
+            success: true,
+            message: result.toString()
+        });
+    } catch (error) {
+        console.error('Job deletion error:', error);
+        res.status(500).json({ error: error.message });
     } finally {
         if (gateway) {
             await gateway.disconnect();
