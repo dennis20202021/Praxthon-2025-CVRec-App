@@ -394,6 +394,15 @@ class CVChaincode extends Contract {
                 ...user,
                 userId: existingUser.userId, // Ensure userId doesn't change
                 email: existingUser.email, // Ensure email doesn't change
+                // Add new profile fields
+                skills: user.skills || existingUser.skills,
+                experience: user.experience || existingUser.experience,
+                education: user.education || existingUser.education,
+                phone: user.phone || existingUser.phone,
+                linkedInUrl: user.linkedInUrl || existingUser.linkedInUrl,
+                profilePhoto: user.profilePhoto || existingUser.profilePhoto,
+                certificates: user.certificates || existingUser.certificates,
+                updatedAt: new Date(ctx.stub.getTxTimestamp().seconds * 1000).toISOString()
             };
 
             await ctx.stub.putState(userId, Buffer.from(JSON.stringify(updatedUser)));

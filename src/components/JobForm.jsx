@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import countriesCurrencyData from "../countriesCurrencyData";
 
 function JobForm({
   user,
@@ -41,6 +42,43 @@ function JobForm({
   const [description, setDescription] = useState("");
   const [requirements, setRequirements] = useState("");
   const [salaryAmount, setSalaryAmount] = useState("");
+
+  const getAvailableCurrencies = () => {
+    const uniqueCurrencies = [];
+    const seenCurrencies = new Set();
+
+    countriesCurrencyData.forEach((country) => {
+      if (!seenCurrencies.has(country.currency)) {
+        seenCurrencies.add(country.currency);
+        uniqueCurrencies.push({
+          code: country.currency,
+          symbol: country.symbol,
+          name: country.name,
+          flag: country.flag,
+        });
+      }
+    });
+
+    return uniqueCurrencies.sort((a, b) => a.code.localeCompare(b.code));
+  };
+
+  const availableCurrencies = getAvailableCurrencies();
+
+  // Get current currency symbol
+  const getCurrentCurrencySymbol = () => {
+    const currentCurrency = availableCurrencies.find(
+      (curr) => curr.code === currency
+    );
+    return currentCurrency ? currentCurrency.symbol : currency;
+  };
+
+  // Get current currency name
+  const getCurrency = () => {
+    const currentCurrency = availableCurrencies.find(
+      (curr) => curr.code === currency
+    );
+    return currentCurrency ? currentCurrency.code : currency;
+  };
 
   // React Quill modules configuration
   const modules = {
@@ -352,7 +390,7 @@ function JobForm({
                     label="Salary Amount"
                     type="number"
                     required
-                    value={salaryAmount}
+                    value={salaryAmount || ""}
                     onChange={(e) => setSalaryAmount(e.target.value)}
                     InputProps={{
                       startAdornment: (
@@ -360,7 +398,7 @@ function JobForm({
                           position="start"
                           sx={{ color: "#FFD700" }}
                         >
-                          {currency}
+                          {`${getCurrency()} ${getCurrentCurrencySymbol()}`}{" "}
                         </InputAdornment>
                       ),
                     }}
@@ -399,16 +437,23 @@ function JobForm({
                         },
                       }}
                     >
-                      <MenuItem value="USD">USD ($)</MenuItem>
-                      <MenuItem value="EUR">EUR (€)</MenuItem>
-                      <MenuItem value="GBP">GBP (£)</MenuItem>
-                      <MenuItem value="JPY">JPY (¥)</MenuItem>
-                      <MenuItem value="CAD">CAD (C$)</MenuItem>
-                      <MenuItem value="AUD">AUD (A$)</MenuItem>
-                      <MenuItem value="CHF">CHF (Fr)</MenuItem>
-                      <MenuItem value="CNY">CNY (¥)</MenuItem>
-                      <MenuItem value="INR">INR (₹)</MenuItem>
-                      <MenuItem value="BRL">BRL (R$)</MenuItem>
+                      {availableCurrencies.map((curr) => (
+                        <MenuItem key={curr.code} value={curr.code}>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <img
+                              src={curr.flag}
+                              alt={curr.name}
+                              style={{
+                                width: "20px",
+                                height: "15px",
+                                marginRight: "8px",
+                                borderRadius: "2px",
+                              }}
+                            />
+                            {curr.code} ({curr.symbol}) - {curr.name}
+                          </Box>
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>

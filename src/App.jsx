@@ -21,6 +21,7 @@ import CandidatesList from "./components/CandidatesList";
 import UploadCV from "./components/UploadCV";
 import AboutUs from "./components/AboutUs";
 import AuthDialog from "./components/AuthDialog";
+import UserProfile from "./components/UserProfile";
 import Footer from "./components/Footer";
 import theme from "./theme";
 
@@ -82,6 +83,16 @@ function SimpleApp() {
                 )
               ) : (
                 <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              user ? (
+                <UserProfile user={user} />
+              ) : (
+                <Navigate to="/login" replace />
               )
             }
           />

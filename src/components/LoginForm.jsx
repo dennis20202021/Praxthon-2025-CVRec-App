@@ -13,6 +13,8 @@ import {
   Snackbar,
 } from "@mui/material";
 import LinkIcon from "@mui/icons-material/Link";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 function LoginForm({ onLogin }) {
   const [role, setRole] = useState("candidate");
@@ -100,7 +102,24 @@ function LoginForm({ onLogin }) {
               "& .MuiAlert-message": {
                 flexGrow: 1,
               },
+              position: "relative",
             }}
+            action={
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={() => setShowMessage(false)}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  p: 0.5,
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            }
           >
             {message.text}
             <LinearProgress

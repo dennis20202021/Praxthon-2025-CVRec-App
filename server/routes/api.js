@@ -481,5 +481,44 @@ router.get('/jobs/:id/applications', async (req, res) => {
     }
 });
 
+// User profile update
+router.put('/user/:userId', async (req, res) => {
+    let gateway;
+    try {
+        const { userId } = req.params;
+        const userData = req.body;
+
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        // First get the current user to verify password if changing
+        if (userData.password) {
+            const currentUserResult = await contract.evaluateTransaction('GetUser', userId);
+            const currentUser = JSON.parse(currentUserResult.toString());
+
+            // Verify current password
+            if (userData.currentPassword !== currentUser.password) {
+                return res.status(400).json({ error: 'Current password is incorrect' });
+            }
+        }
+
+        const result = await contract.submitTransaction('UpdateUser', userId, JSON.stringify(userData));
+        const updatedUser = JSON.parse(result.toString());
+
+        // Remove password from response
+        const { password, ...userWithoutPassword } = updatedUser;
+
+        res.json({ success: true, user: userWithoutPassword });
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
 module.exports = router;
 module.exports.connectToNetwork = connectToNetwork; // Add this line
