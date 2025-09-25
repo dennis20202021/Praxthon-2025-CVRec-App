@@ -23,7 +23,7 @@ function CountryCodeSelector({ value, onChange, disabled = false, sx = {} }) {
       label="Country Code"
       value={value}
       onChange={onChange}
-      onOpen={() => setOpen(true)}
+      onFocus={() => setOpen(true)}
       onClose={() => setOpen(false)}
       disabled={disabled}
       sx={{

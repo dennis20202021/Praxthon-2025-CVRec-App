@@ -1,33 +1,111 @@
-import { useState, useRef } from "react";
-import { Box, Avatar, Button, Typography, IconButton } from "@mui/material";
-import { PhotoCamera, Delete } from "@mui/icons-material";
+import { useState, useEffect, useRef } from "react";
+import {
+  Box,
+  Avatar,
+  Button,
+  Typography,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
+import { PhotoCamera, Delete, Person } from "@mui/icons-material";
 
 function ProfilePictureUpload({ currentPhoto, onPhotoChange, onPhotoRemove }) {
-  const [previewUrl, setPreviewUrl] = useState(currentPhoto);
+  const [previewUrl, setPreviewUrl] = useState(currentPhoto || "");
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        alert("File size should be less than 5MB");
-        return;
+  // Your ImgBB API Key
+  const IMGBB_API_KEY = "d070a3ba1665df1cc91685b83bacd6f8";
+
+  // Update preview when currentPhoto changes
+  useEffect(() => {
+    console.log("Current photo from parent:", currentPhoto);
+    if (currentPhoto) {
+      setPreviewUrl(currentPhoto);
+    } else {
+      setPreviewUrl("");
+    }
+  }, [currentPhoto]);
+
+  const uploadToImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch(
+        `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status}`);
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target.result;
-        setPreviewUrl(imageUrl);
-        onPhotoChange(imageUrl);
-      };
-      reader.readAsDataURL(file);
+      const data = await response.json();
+      console.log("Upload successful:", data);
+
+      if (!data.data || !data.data.url) {
+        throw new Error("No URL returned from ImgBB");
+      }
+
+      return data.data.url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
+  const handleFileSelect = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size should be less than 5MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Create temporary preview first
+      const tempUrl = URL.createObjectURL(file);
+      setPreviewUrl(tempUrl);
+
+      // Upload to ImgBB
+      const imageUrl = await uploadToImgBB(file);
+      console.log("Image uploaded successfully. URL:", imageUrl);
+
+      // Use the permanent URL from ImgBB
+      setPreviewUrl(imageUrl);
+      onPhotoChange(imageUrl); // This sends the URL to parent component
+
+      // Clean up temporary URL
+      URL.revokeObjectURL(tempUrl);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert(`Upload failed: ${error.message}. Please try again.`);
+      // Revert to original photo on error
+      setPreviewUrl(currentPhoto || "");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleRemovePhoto = () => {
+    console.log("Removing photo...");
     setPreviewUrl("");
-    onPhotoRemove();
+    onPhotoRemove(); // This should send empty string to parent
+
+    // Also clear the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -58,8 +136,13 @@ function ProfilePictureUpload({ currentPhoto, onPhotoChange, onPhotoRemove }) {
             : "3px dashed rgba(255, 255, 255, 0.3)",
           boxShadow: previewUrl ? "0 4px 20px rgba(76, 201, 240, 0.3)" : "none",
           transition: "all 0.3s ease",
+          backgroundColor: previewUrl ? "transparent" : "rgba(255,255,255,0.1)",
         }}
-      />
+      >
+        {!previewUrl && (
+          <Person sx={{ fontSize: 48, color: "rgba(255,255,255,0.3)" }} />
+        )}
+      </Avatar>
 
       <input
         type="file"
@@ -67,13 +150,17 @@ function ProfilePictureUpload({ currentPhoto, onPhotoChange, onPhotoRemove }) {
         onChange={handleFileSelect}
         ref={fileInputRef}
         style={{ display: "none" }}
+        disabled={uploading}
       />
 
       <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
         <Button
           variant="contained"
           onClick={() => fileInputRef.current?.click()}
-          startIcon={<PhotoCamera />}
+          startIcon={
+            uploading ? <CircularProgress size={16} /> : <PhotoCamera />
+          }
+          disabled={uploading}
           sx={{
             background: "linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)",
             "&:hover": {
@@ -90,10 +177,14 @@ function ProfilePictureUpload({ currentPhoto, onPhotoChange, onPhotoRemove }) {
             transition: "all 0.3s ease",
           }}
         >
-          Upload Photo
+          {uploading
+            ? "Uploading..."
+            : previewUrl
+            ? "Change Photo"
+            : "Upload Photo"}
         </Button>
 
-        {previewUrl && (
+        {previewUrl && !uploading && (
           <IconButton
             color="error"
             onClick={handleRemovePhoto}
@@ -122,9 +213,15 @@ function ProfilePictureUpload({ currentPhoto, onPhotoChange, onPhotoRemove }) {
           maxWidth: 200,
         }}
       >
-        Recommended: Square image, max 5MB
+        {previewUrl ? "Photo ready to save" : "No photo selected"}
         <br />
-        Supports: JPG, PNG, WebP
+        Max 5MB • JPG, PNG, WebP
+        {uploading && (
+          <>
+            <br />
+            Uploading to cloud...
+          </>
+        )}
       </Typography>
     </Box>
   );

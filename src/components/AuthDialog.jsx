@@ -1,9 +1,7 @@
-import React from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   Button,
   Box,
@@ -45,12 +43,12 @@ function AuthDialog({ open, onClose, type = "candidates" }) {
   const { title, description, action } = getDialogContent();
 
   const handleLogin = () => {
-    onClose();
+    if (onClose) onClose();
     navigate("/login");
   };
 
   const handleRegister = () => {
-    onClose();
+    if (onClose) onClose();
     navigate("/register");
   };
 
@@ -62,14 +60,15 @@ function AuthDialog({ open, onClose, type = "candidates" }) {
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        {/* Remove DialogContentText to fix nested <p> tags */}
+        <Box sx={{ py: 2 }}>
           <Typography variant="body1" sx={{ mb: 2 }}>
             {description}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Please login or register for a {action} to continue.
           </Typography>
-        </DialogContentText>
+        </Box>
       </DialogContent>
       <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
         <Box sx={{ display: "flex", gap: 2 }}>

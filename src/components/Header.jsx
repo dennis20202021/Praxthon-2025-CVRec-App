@@ -18,7 +18,6 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useNavigate } from "react-router-dom";
 import {
   Logout as LogoutIcon,
-  Person as PersonIcon,
 } from "@mui/icons-material";
 
 function Header({ onLogin, onRegister, user, onLogout }) {
@@ -92,7 +91,6 @@ function Header({ onLogin, onRegister, user, onLogout }) {
                       Upload CV
                     </MenuItem>
                     <MenuItem onClick={() => handleNavigation("/profile")}>
-                      <PersonIcon sx={{ mr: 1 }} />
                       My Profile
                     </MenuItem>
                   </>
@@ -134,7 +132,6 @@ function Header({ onLogin, onRegister, user, onLogout }) {
                     color="inherit"
                     sx={{ mx: 1 }}
                     onClick={() => navigate("/profile")}
-                    startIcon={<PersonIcon />}
                   >
                     My Profile
                   </Button>
@@ -202,6 +199,9 @@ function Header({ onLogin, onRegister, user, onLogout }) {
               <MenuItem onClick={() => handleNavigation("/jobs")}>
                 Browse Jobs
               </MenuItem>
+              <MenuItem onClick={() => handleNavigation("/candidates")}>
+                Search Candidates
+              </MenuItem>
               <MenuItem onClick={onLogin}>Login</MenuItem>
               <MenuItem onClick={onRegister}>Register</MenuItem>
             </Menu>
@@ -221,6 +221,13 @@ function Header({ onLogin, onRegister, user, onLogout }) {
               onClick={() => navigate("/jobs")}
             >
               Browse Jobs
+            </Button>
+            <Button
+              color="inherit"
+              sx={{ mx: 1 }}
+              onClick={() => navigate("/candidates")}
+            >
+              Search Candidates
             </Button>
             <Button
               variant="outlined"

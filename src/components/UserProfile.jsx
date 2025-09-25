@@ -51,6 +51,10 @@ function UserProfile({ user }) {
     certificates: [],
   });
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   useEffect(() => {
     if (user) {
       loadUserProfile();
@@ -64,6 +68,7 @@ function UserProfile({ user }) {
         const userData = response.data.user;
         setProfileData((prev) => ({
           ...prev,
+          userId: userData.userId,
           name: userData.name || "",
           email: userData.email || "",
           skills: Array.isArray(userData.skills)
@@ -160,12 +165,24 @@ function UserProfile({ user }) {
         certificates: profileData.certificates,
       };
 
+      if (profileData.profilePhoto) {
+        updateData.profilePhoto = profileData.profilePhoto;
+      } else {
+        // Explicitly set to empty string to remove the photo
+        updateData.profilePhoto = "";
+      }
+
       if (profileData.newPassword) {
         updateData.password = profileData.newPassword;
         updateData.currentPassword = profileData.currentPassword;
       }
 
       const userId = user.userId || user.id;
+
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       const response = await axios.put(`/api/user/${userId}`, updateData);
 
       if (response.data.success) {
@@ -177,6 +194,7 @@ function UserProfile({ user }) {
           newPassword: "",
           confirmPassword: "",
         }));
+        scrollToTop();
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -193,6 +211,7 @@ function UserProfile({ user }) {
   const handleCancel = () => {
     setEditing(false);
     loadUserProfile();
+    scrollToTop();
   };
 
   return (
@@ -245,6 +264,7 @@ function UserProfile({ user }) {
           backdropFilter: "blur(10px)",
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: "16px",
+          mb: 8,
         }}
       >
         {/* Action Header */}

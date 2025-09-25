@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useNavigate, // Add this import
 } from "react-router-dom";
 
 // Import components
@@ -25,8 +26,11 @@ import UserProfile from "./components/UserProfile";
 import Footer from "./components/Footer";
 import theme from "./theme";
 
-function SimpleApp() {
+// Create a component that uses hooks
+function AppContent() {
   const [user, setUser] = useState(null);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false); // Add state for dialog
+  const navigate = useNavigate(); // Define navigate here
 
   const handleLogin = (role, userData) => {
     setUser(userData);
@@ -40,101 +44,118 @@ function SimpleApp() {
     setUser(null);
   };
 
+  const handleCloseAuthDialog = () => {
+    setAuthDialogOpen(false);
+    navigate("/"); // Navigate to home when dialog closes
+  };
+
+  return (
+    <>
+      <Header
+        onLogin={() => navigate("/login")} // Use navigate instead of window.location
+        onRegister={() => navigate("/register")} // Use navigate instead of window.location
+        user={user}
+        onLogout={handleLogout}
+      />
+      <Routes>
+        <Route path="/" element={<Hero />} />
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <LoginForm onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            user ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <RegisterForm onRegister={handleRegister} />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            user ? (
+              user.role === "candidate" ? (
+                <CandidateDashboard onLogout={handleLogout} user={user} />
+              ) : (
+                <RecruiterDashboard onLogout={handleLogout} user={user} />
+              )
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            user ? (
+              <UserProfile user={user} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route path="/jobs" element={<JobListings user={user} />} />
+        <Route
+          path="/post-job"
+          element={
+            user && user.role === "recruiter" ? (
+              <CreateJob user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/candidates"
+          element={
+            user && user.role === "recruiter" ? (
+              <CandidatesList user={user} />
+            ) : (
+              // Show AuthDialog when user is not authenticated
+              <>
+                <Navigate to="/candidates" replace />
+                <AuthDialog
+                  open={true}
+                  onClose={handleCloseAuthDialog}
+                  type="candidates"
+                />
+              </>
+            )
+          }
+        />
+        <Route
+          path="/upload-cv"
+          element={
+            user && user.role === "candidate" ? (
+              <UploadCV user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      <Footer />
+    </>
+  );
+}
+
+function SimpleApp() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Header
-          onLogin={() => (window.location.href = "/login")}
-          onRegister={() => (window.location.href = "/register")}
-          user={user}
-          onLogout={handleLogout}
-        />
-        <Routes>
-          <Route path="/" element={<Hero />} />
-          <Route
-            path="/login"
-            element={
-              user ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <LoginForm onLogin={handleLogin} />
-              )
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              user ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <RegisterForm onRegister={handleRegister} />
-              )
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              user ? (
-                user.role === "candidate" ? (
-                  <CandidateDashboard onLogout={handleLogout} user={user} />
-                ) : (
-                  <RecruiterDashboard onLogout={handleLogout} user={user} />
-                )
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              user ? (
-                <UserProfile user={user} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route path="/jobs" element={<JobListings user={user} />} />
-          <Route
-            path="/post-job"
-            element={
-              user && user.role === "recruiter" ? (
-                <CreateJob user={user} />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route
-            path="/candidates"
-            element={
-              user && user.role === "recruiter" ? (
-                <CandidatesList user={user} />
-              ) : (
-                <AuthDialog
-                  open={true}
-                  onClose={() => navigate("/")}
-                  type="candidates"
-                />
-              )
-            }
-          />
-          <Route
-            path="/upload-cv"
-            element={
-              user && user.role === "candidate" ? (
-                <UploadCV user={user} />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-        <Footer />
+        <AppContent />
       </Router>
     </ThemeProvider>
   );
