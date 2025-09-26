@@ -201,6 +201,50 @@ router.get('/jobs', async (req, res) => {
     }
 });
 
+router.put('/candidates/:candidateId/status', async (req, res) => {
+    let gateway;
+    try {
+        const { candidateId } = req.params;
+        const { status } = req.body;
+
+        gateway = await connectToNetwork();
+        const network = await gateway.getNetwork('mychannel');
+        const contract = network.getContract('cvchaincode');
+
+        // Get current candidate data
+        const candidateResult = await contract.evaluateTransaction('GetUser', candidateId);
+        const candidate = JSON.parse(candidateResult.toString());
+
+        // Update status
+        const updateData = {
+            ...candidate,
+            status: status
+        };
+
+        const result = await contract.submitTransaction('UpdateUser', candidateId, JSON.stringify(updateData));
+        const updatedCandidate = JSON.parse(result.toString());
+
+        // Remove password from response
+        const { password, ...candidateWithoutPassword } = updatedCandidate;
+
+        res.json({
+            success: true,
+            message: `Candidate status updated to ${status}`,
+            candidate: candidateWithoutPassword
+        });
+    } catch (error) {
+        console.error('Update candidate status error:', error);
+        res.status(500).json({
+            error: 'Error updating candidate status',
+            details: error.message
+        });
+    } finally {
+        if (gateway) {
+            await gateway.disconnect();
+        }
+    }
+});
+
 router.post('/jobs/:id/apply', async (req, res) => {
     let gateway;
     try {
@@ -212,7 +256,8 @@ router.post('/jobs/:id/apply', async (req, res) => {
         const applicantData = JSON.stringify({
             name: applicantName,
             email: applicantEmail,
-            coverLetter
+            coverLetter,
+            status: "Applied"
         });
 
         const result = await contract.submitTransaction('ApplyForJob', req.params.id, applicantData);
@@ -421,36 +466,12 @@ router.get('/candidates', async (req, res) => {
         res.json({ success: true, candidates: safeCandidates });
     } catch (error) {
         console.error('Get candidates error:', error);
-
-        // Fallback to mock data if chaincode function not available
-        const mockCandidates = [
-            {
-                name: "Michael Johnson",
-                title: "Senior Software Engineer",
-                experience: "7 years",
-                skills: "JavaScript, React, Node.js, AWS",
-                education: "MIT, Computer Science",
-                status: "New",
-            },
-            {
-                name: "Sarah Williams",
-                title: "UX Designer",
-                experience: "5 years",
-                skills: "Figma, User Research, Prototyping",
-                education: "RISD, Design",
-                status: "Reviewing",
-            },
-            {
-                name: "David Chen",
-                title: "Blockchain Developer",
-                experience: "4 years",
-                skills: "Hyperledger, Solidity, Smart Contracts",
-                education: "Stanford, Computer Science",
-                status: "Interview",
-            },
-        ];
-
-        res.json({ success: true, candidates: mockCandidates });
+        // Instead of returning mock data, return an empty array or proper error
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch candidates from blockchain',
+            candidates: []
+        });
     } finally {
         if (gateway) {
             await gateway.disconnect();
@@ -501,9 +522,32 @@ router.put('/user/:userId', async (req, res) => {
             if (userData.currentPassword !== currentUser.password) {
                 return res.status(400).json({ error: 'Current password is incorrect' });
             }
+
+            // Remove currentPassword from the data we send to blockchain
+            delete userData.currentPassword;
         }
 
-        const result = await contract.submitTransaction('UpdateUser', userId, JSON.stringify(userData));
+        // Prepare the update data for blockchain
+        const updateData = {
+            name: userData.name,
+            title: userData.title,
+            skills: userData.skills,
+            experience: userData.experience,
+            education: userData.education,
+            countryCode: userData.countryCode,
+            phoneNumber: userData.phoneNumber,
+            linkedInUrl: userData.linkedInUrl,
+            profilePhoto: userData.profilePhoto,
+            certificates: userData.certificates,
+            cvData: userData.cvData
+        };
+
+        // Only include password if it's being changed
+        if (userData.password) {
+            updateData.password = userData.password;
+        }
+
+        const result = await contract.submitTransaction('UpdateUser', userId, JSON.stringify(updateData));
         const updatedUser = JSON.parse(result.toString());
 
         // Remove password from response
@@ -512,7 +556,10 @@ router.put('/user/:userId', async (req, res) => {
         res.json({ success: true, user: userWithoutPassword });
     } catch (error) {
         console.error('Update user error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: 'Error updating profile. Please try again.',
+            details: error.message
+        });
     } finally {
         if (gateway) {
             await gateway.disconnect();

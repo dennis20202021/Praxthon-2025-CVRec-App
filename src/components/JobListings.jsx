@@ -173,6 +173,7 @@ function JobListings({ user }) {
         applicantName: user.name,
         applicantEmail: user.email,
         coverLetter: `Application from ${user.name} for this position`,
+        status: "Applied", // Ensure status is set when applying
       };
 
       const response = await axios.post(
@@ -186,6 +187,15 @@ function JobListings({ user }) {
           "success"
         );
         fetchJobs();
+
+        // Also update candidate status in the system
+        try {
+          await axios.put(`/api/candidates/${user.userId}/status`, {
+            status: "Applied",
+          });
+        } catch (statusError) {
+          console.error("Error updating candidate status:", statusError);
+        }
       }
     } catch (error) {
       console.error("Error applying for job:", error);

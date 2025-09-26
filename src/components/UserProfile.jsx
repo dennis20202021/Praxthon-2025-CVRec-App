@@ -38,6 +38,7 @@ function UserProfile({ user }) {
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
+    title: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -71,6 +72,7 @@ function UserProfile({ user }) {
           userId: userData.userId,
           name: userData.name || "",
           email: userData.email || "",
+          title: userData.title || "",
           skills: Array.isArray(userData.skills)
             ? userData.skills.join(", ")
             : userData.skills || "",
@@ -152,6 +154,7 @@ function UserProfile({ user }) {
     try {
       const updateData = {
         name: profileData.name,
+        title: profileData.title,
         skills: profileData.skills
           .split(",")
           .map((skill) => skill.trim())
@@ -177,7 +180,15 @@ function UserProfile({ user }) {
         updateData.currentPassword = profileData.currentPassword;
       }
 
-      const userId = user.userId || user.id;
+      // First, get the user by email to obtain the userId
+      const userResponse = await axios.get(`/api/user/${user.email}`);
+      if (!userResponse.data.success) {
+        throw new Error("User not found");
+      }
+
+      const userData = userResponse.data.user;
+
+      const userId = userData.userId;
 
       if (!userId) {
         throw new Error("User ID not found");
@@ -496,6 +507,23 @@ function UserProfile({ user }) {
                     helperText="Separate multiple skills with commas"
                     multiline
                     rows={3}
+                    sx={{
+                      "& .MuiInputBase-input": { color: "white" },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Current/Desired Position"
+                    value={profileData.title}
+                    onChange={handleInputChange("title")}
+                    disabled={!editing}
+                    placeholder="Senior Software Engineer | Full Stack Developer"
+                    helperText="Separate multiple titles with ' | '"
                     sx={{
                       "& .MuiInputBase-input": { color: "white" },
                       "& .MuiInputLabel-root": {

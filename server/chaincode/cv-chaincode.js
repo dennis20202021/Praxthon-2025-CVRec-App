@@ -73,6 +73,7 @@ class CVChaincode extends Contract {
                 password: user.password,
                 name: user.name,
                 role: user.role,
+                status: user.status || "Not Applied",
                 createdAt: createdAt  // Now deterministic!
             };
 
@@ -322,7 +323,7 @@ class CVChaincode extends Contract {
             job.applicants.push({
                 ...applicant,
                 appliedAt: appliedAt, // Now deterministic!
-                status: "Pending" // Add status field for tracking
+                status: applicant.status || "Applied" // Add status field for tracking
             });
 
             await ctx.stub.putState(jobId, Buffer.from(JSON.stringify(job)));
@@ -377,6 +378,7 @@ class CVChaincode extends Contract {
     }
 
     // Update user profile (for CV upload)
+    // In the UpdateUser function, add cvData handling
     async UpdateUser(ctx, userId, userData) {
         try {
             const exists = await this.UserExists(ctx, userId);
@@ -392,8 +394,9 @@ class CVChaincode extends Contract {
             const updatedUser = {
                 ...existingUser,
                 ...user,
-                userId: existingUser.userId, // Ensure userId doesn't change
-                email: existingUser.email, // Ensure email doesn't change
+                userId: existingUser.userId,
+                email: existingUser.email,
+                title: user.title !== undefined ? user.title : existingUser.title,
                 skills: user.skills !== undefined ? user.skills : existingUser.skills,
                 experience: user.experience !== undefined ? user.experience : existingUser.experience,
                 education: user.education !== undefined ? user.education : existingUser.education,
@@ -401,6 +404,7 @@ class CVChaincode extends Contract {
                 linkedInUrl: user.linkedInUrl !== undefined ? user.linkedInUrl : existingUser.linkedInUrl,
                 profilePhoto: user.profilePhoto !== undefined ? user.profilePhoto : existingUser.profilePhoto,
                 certificates: user.certificates !== undefined ? user.certificates : existingUser.certificates,
+                cvData: user.cvData !== undefined ? user.cvData : existingUser.cvData, // Add this line
                 updatedAt: new Date(ctx.stub.getTxTimestamp().seconds * 1000).toISOString()
             };
 
